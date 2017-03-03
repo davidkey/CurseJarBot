@@ -35,7 +35,7 @@ public class BotController {
 
 		try{
 			if(!botService.startBot()){
-				return Collections.singletonMap("response", "bot failed to stop");
+				return Collections.singletonMap("response", "bot failed to start");
 			}
 		} catch (Exception e){
 			return Collections.singletonMap("response", "bot failed to start");
