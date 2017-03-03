@@ -49,4 +49,11 @@ public class BotService {
 		return true;
 	}
 	
+	public Boolean stopBot(){
+		log.trace("stopBot()");
+		
+		api.disconnect();
+		return true;
+	}
+	
 }
