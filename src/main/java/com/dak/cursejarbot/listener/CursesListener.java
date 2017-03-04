@@ -25,6 +25,10 @@ public class CursesListener implements MessageCreateListener {
 	
 	@Override
 	public void onMessageCreate(DiscordAPI api, Message message) {
+		if(message.getAuthor().equals(api.getYourself())){
+			return;
+		}
+		
 		final String content = message.getContent().toLowerCase();
     	final Matcher matcher = curseService.getCursePattern().matcher(content);
     	
@@ -36,7 +40,7 @@ public class CursesListener implements MessageCreateListener {
         	}
         	
         	final Curses c = curseService.incrementCurseCount(message.getAuthor(), message.getChannelReceiver().getServer().getId(), curseCount);
-        	message.reply(message.getAuthor().getMentionTag() + " - one of us needs to calm the f*** down! You've now cursed " + c.getCurseCount() + " times "
+        	message.reply(message.getAuthor().getMentionTag() + " - one of us needs to calm down! You've now cursed " + c.getCurseCount() + " times "
         			+ "for a curse jar balance of " + NumberFormat.getCurrencyInstance().format(c.getCurseCount() * .1f) + ".");
         }
 

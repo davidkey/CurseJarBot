@@ -6,13 +6,16 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import com.dak.cursejarbot.model.CurseWord;
 import com.dak.cursejarbot.model.Curses;
+import com.dak.cursejarbot.repository.CurseWordRepository;
 import com.dak.cursejarbot.repository.CursesRepository;
 
 import de.btobastian.javacord.entities.User;
@@ -22,12 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CurseService {
 	private final CursesRepository cursesRepos;
+	private final CurseWordRepository curseWordRepos;
 
 	private Pattern cursePattern;
 
 	@Autowired
-	public CurseService(final CursesRepository cursesRepos){
+	public CurseService(final CursesRepository cursesRepos, final CurseWordRepository curseWordRepos){
 		this.cursesRepos = cursesRepos;
+		this.curseWordRepos = curseWordRepos;
 		cursePattern = null;
 	}
 
@@ -47,13 +52,17 @@ public class CurseService {
 
 		return cursesRepos.save(c);
 	}
+	
+	public synchronized void clearPatternCache(){
+		cursePattern = null;
+	}
 
 	public synchronized Pattern getCursePattern(){
 		log.trace("getCursePattern()");
 
 		if(cursePattern == null){
 
-			final List<String> curses = getCursesFromFile();
+			final List<String> curses = getCurses();
 
 			final StringBuilder sb = new StringBuilder();
 			curses.stream().forEach(s -> sb.append(s).append("|"));
@@ -65,6 +74,21 @@ public class CurseService {
 		}
 
 		return cursePattern;
+	}
+	
+	private List<String> getCurses(){
+		List<CurseWord> curseWords = curseWordRepos.findAllByOrderByCurseWordAsc();
+		if(curseWords.isEmpty()){
+			final List<String> curseWordsFromFile = getCursesFromFile();
+			
+			curseWords = curseWordsFromFile.stream()
+					.map(s -> CurseWord.builder().curseWord(s).build())
+					.collect(Collectors.toList());
+					
+			curseWordRepos.save(curseWords);
+		}
+		
+		return curseWords.stream().map(CurseWord::getCurseWord).collect(Collectors.toList());
 	}
 
 	private List<String> getCursesFromFile(){

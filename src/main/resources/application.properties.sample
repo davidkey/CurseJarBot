@@ -13,3 +13,4 @@ discord.api.token=
 
 bot.autostart=true
 bot.donate.url=http://
+bot.maintenance.role=curse-jar-role

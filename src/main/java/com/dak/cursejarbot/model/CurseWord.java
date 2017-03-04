@@ -14,27 +14,18 @@ import lombok.ToString;
 import lombok.experimental.Tolerate;
 
 @Entity
-@Table(name = "curses")
+@Table(name = "curse_words")
 @Getter
 @Setter
 @Builder
 @ToString
-public class Curses implements Serializable{
+public class CurseWord implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	@Tolerate
-	public Curses(){}
+	public CurseWord(){}
 	
 	@Id
 	@Column(nullable = false)
-	private String id;
-	
-	@Column(nullable = false)
-	private String username;
-	
-	@Column(nullable = false)
-	private String serverId;
-	
-	@Column(nullable = false)
-	private Long curseCount;
+	private String curseWord;
 }
