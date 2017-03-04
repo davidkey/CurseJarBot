@@ -20,7 +20,5 @@ public class CurseJarBotApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 		botService.startBot();
-		
-		// wait here ..?
 	}
 }

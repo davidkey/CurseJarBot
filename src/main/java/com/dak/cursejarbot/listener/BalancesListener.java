@@ -27,7 +27,7 @@ public class BalancesListener implements MessageCreateListener {
 	public void onMessageCreate(DiscordAPI api, Message message) {
 		/* check balances */
     	if("!balances".equals(message.getContent().toLowerCase())){
-    		List<Curses> curses = cursesRepos.findAllByServerIdOrderByCurseCountDesc(message.getChannelReceiver().getServer().getId());
+    		final List<Curses> curses = cursesRepos.findAllByServerIdOrderByCurseCountDesc(message.getChannelReceiver().getServer().getId());
     		
     		if(curses.isEmpty()){
     			message.reply("No balances at this time.");
