@@ -61,7 +61,6 @@ public class CurseService {
 		log.trace("getCursePattern()");
 
 		if(cursePattern == null){
-
 			final List<String> curses = getCurses();
 
 			final StringBuilder sb = new StringBuilder();
@@ -76,7 +75,7 @@ public class CurseService {
 		return cursePattern;
 	}
 	
-	private List<String> getCurses(){
+	private synchronized List<String> getCurses(){
 		List<CurseWord> curseWords = curseWordRepos.findAllByOrderByCurseWordAsc();
 		if(curseWords.isEmpty()){
 			final List<String> curseWordsFromFile = getCursesFromFile();
