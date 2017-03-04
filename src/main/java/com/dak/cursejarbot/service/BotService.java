@@ -52,6 +52,8 @@ public class BotService {
             	log.error("Bot error!", t);
             }
         });
+        
+        api.setAutoReconnect(true);
 		return true;
 	}
 	

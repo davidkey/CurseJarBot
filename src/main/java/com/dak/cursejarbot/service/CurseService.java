@@ -34,6 +34,7 @@ public class CurseService {
 		this.cursesRepos = cursesRepos;
 		this.curseWordRepos = curseWordRepos;
 		cursePattern = null;
+		getCurses(); // warm up cache
 	}
 
 	public Curses incrementCurseCount(final User user, final String serverId, final int count){
