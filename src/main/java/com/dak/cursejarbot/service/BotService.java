@@ -28,13 +28,13 @@ public class BotService {
 
 	@Autowired
 	public BotService(
-			@Value("${discord.api.token}") final String token, 
+			final DiscordAPI api, 
 			final CursesListener cursesListener,
 			final BalancesListener balancesListener,
 			final MaintenanceListener maintenanceListener,
 			final HelpListener helpListener,
 			final EchoListener echoListener){
-		api = Javacord.getApi(token, true);	
+		this.api = api;	
 		this.cursesListener = cursesListener;
 		this.balancesListener = balancesListener;
 		this.maintenanceListener = maintenanceListener;

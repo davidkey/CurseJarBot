@@ -54,8 +54,8 @@ public class HelpListener implements MessageCreateListener {
 				.append("!maint remove [curse word]\n")
 				.append("!maint clearbalances\n");
 				
-				sb.append("\nCurseJarBot version ").append(appVersion)
-					.append(" (").append(gitProperties.getCommitId()).append(")\n")
+				sb.append("\nCurseJarBot version ").append(appVersion).append("\n")
+					.append("https://github.com/davidkey/CurseJarBot/commit/").append(gitProperties.getCommitId()).append("\n")
 					.append("Built w/ java ").append(javaVersion)
 					.append(" @ ").append(buildTime).append("\n");
 
