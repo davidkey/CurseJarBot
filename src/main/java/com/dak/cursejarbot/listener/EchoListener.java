@@ -7,7 +7,7 @@ import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.listener.message.MessageCreateListener;
 
 @Component
-public class YoutubeListener implements MessageCreateListener {
+public class EchoListener implements MessageCreateListener {
 
 	@Override
 	public void onMessageCreate(DiscordAPI api, Message message) {
@@ -15,8 +15,8 @@ public class YoutubeListener implements MessageCreateListener {
 			return;
 		}
 		/* check balances */
-		if(message.getContent().toLowerCase().contains("youtube") || message.getContent().toLowerCase().contains("youtu.be")){
-			message.reply(message.getAuthor().getMentionTag() + " youtube eh? risky choice... NOT! rekt");
+		if(message.getContent().toLowerCase().startsWith("!echo")){
+			message.reply(message.getAuthor().getMentionTag() + " message content: '" + message.getContent() + "'");
 		}
 
 	}

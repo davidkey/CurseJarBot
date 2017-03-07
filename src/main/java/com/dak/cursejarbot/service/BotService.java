@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.dak.cursejarbot.listener.BalancesListener;
 import com.dak.cursejarbot.listener.CursesListener;
+import com.dak.cursejarbot.listener.EchoListener;
 import com.dak.cursejarbot.listener.HelpListener;
 import com.dak.cursejarbot.listener.MaintenanceListener;
 import com.google.common.util.concurrent.FutureCallback;
@@ -23,6 +24,7 @@ public class BotService {
 	private final BalancesListener balancesListener;
 	private final MaintenanceListener maintenanceListener;
 	private final HelpListener helpListener;
+	private final EchoListener echoListener;
 
 	@Autowired
 	public BotService(
@@ -30,12 +32,14 @@ public class BotService {
 			final CursesListener cursesListener,
 			final BalancesListener balancesListener,
 			final MaintenanceListener maintenanceListener,
-			final HelpListener helpListener){
+			final HelpListener helpListener,
+			final EchoListener echoListener){
 		api = Javacord.getApi(token, true);	
 		this.cursesListener = cursesListener;
 		this.balancesListener = balancesListener;
 		this.maintenanceListener = maintenanceListener;
 		this.helpListener = helpListener;
+		this.echoListener = echoListener;
 	}
 
 	public Boolean startBot(){
@@ -45,11 +49,11 @@ public class BotService {
 			@Override
 			public void onSuccess(DiscordAPI api) {
 				// register listeners
-				// note: maint goes first so the bot doesn't call them out when removing a curse word
 				api.registerListener(maintenanceListener);
 				api.registerListener(cursesListener);
 				api.registerListener(balancesListener);
 				api.registerListener(helpListener);
+				api.registerListener(echoListener);
 			}
 
 			@Override
