@@ -69,7 +69,8 @@ public class MaintenanceListener implements MessageCreateListener {
 			.append("!maint list\n")
 			.append("!maint add [curse word]\n")
 			.append("!maint remove [curse word]\n")
-			.append("!maint clearbalances\n");
+			.append("!maint clearbalances\n")
+			.append("!maint silent [on/off]\n");;
 
 			message.reply(sb.toString());
 			return;
@@ -118,6 +119,24 @@ public class MaintenanceListener implements MessageCreateListener {
 				message.reply(message.getAuthor().getMentionTag() + " error while clearing balances. Please check bot logs.");
 			}
 
+			return;
+		}
+		
+		if("silent".equals(options[1])){
+			if(options.length > 2){
+				if("on".equals(options[2])){
+					message.reply(message.getAuthor().getMentionTag() + " silent mode enabled");
+					curseService.enableSilentMode(serverId);
+				} else if("off".equals(options[2])){
+					message.reply(message.getAuthor().getMentionTag() + " silent mode disabled");
+					curseService.disableSilentMode(serverId);
+				} else {
+					message.reply(message.getAuthor().getMentionTag() + " " + options[2] + " is not a valid option for !maint silent [on/off]");
+				}
+			} else {
+				message.reply(message.getAuthor().getMentionTag() + " invalid syntax for !maint silent [on/off]");
+			}
+			
 			return;
 		}
 

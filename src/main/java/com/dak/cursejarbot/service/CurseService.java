@@ -34,6 +34,7 @@ public class CurseService {
 	private final CurseWordRepository curseWordRepos;
 
 	private Map<String, Pattern> cursePatterns;
+	private final Map<String, Boolean> silentMode; // TODO: refactor to a table so we can persist this through server restarts...
 	private List<String> cursesFromFile;
 
 	@Autowired
@@ -42,6 +43,7 @@ public class CurseService {
 		this.curseWordRepos = curseWordRepos;
 		cursePatterns = null;
 		cursesFromFile = null;
+		silentMode = new HashMap<String, Boolean>();
 	}
 
 	public Curses incrementCurseCount(final User user, final String serverId, final int count){
@@ -59,6 +61,18 @@ public class CurseService {
 		}
 
 		return cursesRepos.save(c);
+	}
+	
+	public void enableSilentMode(final String serverId){
+		silentMode.put(serverId, true);
+	}
+	
+	public void disableSilentMode(final String serverId){
+		silentMode.put(serverId, false);
+	}
+	
+	public Boolean isSilentModeEnabled(final String serverId){
+		return silentMode.containsKey(serverId) && silentMode.get(serverId);
 	}
 
 	public Boolean clearBalances(@NonNull final String serverId){
