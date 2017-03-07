@@ -41,4 +41,4 @@ java -jar ./target/cursejarbot-0.0.1-SNAPSHOT.jar
 
 Note that you must supply a ```discord.api.token``` - copy ```application.properties.sample``` to ```application.properties``` and update accordingly.
 
-See https://github.com/BtoBastian/Javacord for more information about aquiring a discord api token.
+See https://github.com/BtoBastian/Javacord for more information about acquiring a discord api token.
