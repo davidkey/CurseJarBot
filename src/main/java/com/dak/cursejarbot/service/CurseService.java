@@ -19,10 +19,8 @@ package com.dak.cursejarbot.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -33,7 +31,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.dak.cursejarbot.model.CurseWord;
@@ -41,6 +38,7 @@ import com.dak.cursejarbot.model.Curses;
 import com.dak.cursejarbot.repository.CurseWordRepository;
 import com.dak.cursejarbot.repository.CursesRepository;
 
+import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
 import lombok.NonNull;
@@ -52,20 +50,20 @@ import lombok.extern.slf4j.Slf4j;
 public class CurseService {
 	private final CursesRepository cursesRepos;
 	private final CurseWordRepository curseWordRepos;
+	private final DiscordAPI api;
 
 	private Map<String, Pattern> cursePatterns;
 	private final Map<String, Boolean> silentMode; // TODO: refactor to a table so we can persist this through server restarts...
-	private final Map<Message, LocalTime> deleteQueue;
 	private List<String> cursesFromFile;
 
 	@Autowired
-	public CurseService(final CursesRepository cursesRepos, final CurseWordRepository curseWordRepos){
+	public CurseService(final CursesRepository cursesRepos, final CurseWordRepository curseWordRepos, final DiscordAPI api){
 		this.cursesRepos = cursesRepos;
 		this.curseWordRepos = curseWordRepos;
+		this.api = api;
 		cursePatterns = null;
 		cursesFromFile = null;
 		silentMode = new HashMap<String, Boolean>();
-		deleteQueue = new HashMap<Message, LocalTime>();
 	}
 
 	public Curses incrementCurseCount(final User user, final String serverId, final int count){
@@ -85,32 +83,18 @@ public class CurseService {
 		return cursesRepos.save(c);
 	}
 
-	public void addToDeleteQueue(final Message message, final Long secondsBeforeDelete){
-		synchronized(deleteQueue){
-			deleteQueue.put(message, LocalTime.now().plusSeconds(secondsBeforeDelete));
-		}
-	}
-
-	@Scheduled(fixedDelay=1000) // check delete queue for messages every second
-	protected void deleteFromDeleteQueue(){
-		synchronized(deleteQueue){
-			if(deleteQueue.isEmpty()){
-				return;
-			}
-			
-			final Iterator<Message> it = deleteQueue.keySet().iterator();
-			while (it.hasNext())
-			{
-				final Message m = it.next();
-				final LocalTime lt = deleteQueue.get(m);
-
-				if (lt.compareTo(LocalTime.now()) < 0){
-					log.trace("deleting message {}", m);
-					m.delete(); // should I wait here?
-					it.remove();	
-				}
-			}
-		}
+	public void deleteMessageBySchedule(final Message message, final Long secondsBeforeDelete){
+		final String messageId = message.getId();
+		
+		new java.util.Timer().schedule( 
+		        new java.util.TimerTask() {
+		            @Override
+		            public void run() {
+		                api.getMessageById(messageId).delete();
+		            }
+		        }, 
+		        secondsBeforeDelete * 1000L
+		);
 	}
 
 	public void enableSilentMode(final String serverId){

@@ -71,7 +71,7 @@ public class CursesListener implements MessageCreateListener {
 						+ "for a curse jar balance of " + NumberFormat.getCurrencyInstance().format(c.getCurseCount() * .1f) + ".");
 
 				try {
-					curseService.addToDeleteQueue(futureMessage.get(), 10L);
+					curseService.deleteMessageBySchedule(futureMessage.get(), 10L);
 				} catch (InterruptedException | ExecutionException e) {
 					log.warn("failed to retrieve posted message", e);
 				}
