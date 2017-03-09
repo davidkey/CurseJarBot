@@ -17,7 +17,6 @@ OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 package com.dak.cursejarbot.meta;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -51,9 +50,9 @@ public class ListenerAttacher {
 	private void addListenersToDiscordApi(){
 		final Map<String, MessageCreateListener> listeners = applicationContext.getBeansOfType(MessageCreateListener.class);
 
-		for(Entry<String, MessageCreateListener> entry : listeners.entrySet()){
-			log.debug("addListenersToDiscordApi() Entry={}; value={}", entry.getKey(), entry.getValue());
-			discordAPI.registerListener(entry.getValue());
+		for(MessageCreateListener listener : listeners.values()){
+			log.trace("addListenersToDiscordApi() Listener={}", listener);
+			discordAPI.registerListener(listener);
 		}
 		return;
 	}
