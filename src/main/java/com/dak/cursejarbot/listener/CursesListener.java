@@ -1,6 +1,8 @@
 package com.dak.cursejarbot.listener;
 
 import java.text.NumberFormat;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +15,10 @@ import com.dak.cursejarbot.service.MaintenanceService;
 import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.listener.message.MessageCreateListener;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class CursesListener implements MessageCreateListener {
 
 	private final CurseService curseService;
@@ -47,8 +51,14 @@ public class CursesListener implements MessageCreateListener {
 
 
 			if(!curseService.isSilentModeEnabled(serverId)){
-				message.reply(message.getAuthor().getMentionTag() + " - one of us needs to calm down! You've now cursed " + c.getCurseCount() + " times "
+				Future<Message> futureMessage = message.reply(message.getAuthor().getMentionTag() + " - one of us needs to calm down! You've now cursed " + c.getCurseCount() + " times "
 						+ "for a curse jar balance of " + NumberFormat.getCurrencyInstance().format(c.getCurseCount() * .1f) + ".");
+
+				try {
+					curseService.addToDeleteQueue(futureMessage.get(), 10L);
+				} catch (InterruptedException | ExecutionException e) {
+					log.warn("failed to retrieve posted message", e);
+				}
 			}
 		}
 

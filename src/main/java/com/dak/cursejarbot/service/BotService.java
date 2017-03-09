@@ -1,7 +1,6 @@
 package com.dak.cursejarbot.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.dak.cursejarbot.listener.BalancesListener;
@@ -12,7 +11,6 @@ import com.dak.cursejarbot.listener.MaintenanceListener;
 import com.google.common.util.concurrent.FutureCallback;
 
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.Javacord;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
