@@ -3,11 +3,6 @@ package com.dak.cursejarbot.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dak.cursejarbot.listener.BalancesListener;
-import com.dak.cursejarbot.listener.CursesListener;
-import com.dak.cursejarbot.listener.EchoListener;
-import com.dak.cursejarbot.listener.HelpListener;
-import com.dak.cursejarbot.listener.MaintenanceListener;
 import com.google.common.util.concurrent.FutureCallback;
 
 import de.btobastian.javacord.DiscordAPI;
@@ -18,26 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 public class BotService {
 
 	private final DiscordAPI api;
-	private final CursesListener cursesListener;
-	private final BalancesListener balancesListener;
-	private final MaintenanceListener maintenanceListener;
-	private final HelpListener helpListener;
-	private final EchoListener echoListener;
 
 	@Autowired
-	public BotService(
-			final DiscordAPI api, 
-			final CursesListener cursesListener,
-			final BalancesListener balancesListener,
-			final MaintenanceListener maintenanceListener,
-			final HelpListener helpListener,
-			final EchoListener echoListener){
+	public BotService(final DiscordAPI api){
 		this.api = api;	
-		this.cursesListener = cursesListener;
-		this.balancesListener = balancesListener;
-		this.maintenanceListener = maintenanceListener;
-		this.helpListener = helpListener;
-		this.echoListener = echoListener;
 	}
 
 	public Boolean startBot(){
@@ -46,12 +25,7 @@ public class BotService {
 		api.connect(new FutureCallback<DiscordAPI>() {
 			@Override
 			public void onSuccess(DiscordAPI api) {
-				// register listeners
-				api.registerListener(maintenanceListener);
-				api.registerListener(cursesListener);
-				api.registerListener(balancesListener);
-				api.registerListener(helpListener);
-				api.registerListener(echoListener);
+				// we used to register listeners here, but that's now done w/ ListenerAttacher automatically...
 			}
 
 			@Override
