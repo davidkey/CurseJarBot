@@ -17,6 +17,7 @@ OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 package com.dak.cursejarbot.listener;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -31,6 +32,8 @@ import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.listener.message.MessageCreateListener;
+import lombok.Getter;
+import lombok.NonNull;
 
 @Component
 public class BalancesListener implements MessageCreateListener {
@@ -51,12 +54,11 @@ public class BalancesListener implements MessageCreateListener {
 			if(curses.isEmpty()){
 				message.reply("No balances at this time.");
 				return;
-			} 
+			}
 
 			int count = 0;
-			StringBuilder sb = new StringBuilder();
-			sb.append("Current Curse Jar Balances: \n\n");
-
+			List<UsernameAndCurseCount> topUsers = new ArrayList<UsernameAndCurseCount>(Math.min(curses.size(), 10));
+			
 			for(Curses c : curses){
 				if(count >= 10){
 					break;
@@ -68,23 +70,59 @@ public class BalancesListener implements MessageCreateListener {
 					Future<User> fu = api.getUserById(c.getUserId());
 					try {
 						u = fu.get();
-					} catch (InterruptedException | ExecutionException e) {
-						
-					}
+					} catch (InterruptedException | ExecutionException e) {}
 				}
 				
 				final String username = u != null ? u.getName() : c.getUsername(); // if we can't pull username from discord, use our cached version (can change?)
-				
-				sb.append(username + " - " + NumberFormat.getCurrencyInstance().format(c.getCurseCount() * .1f));
-				sb.append("\n");
+				topUsers.add(new UsernameAndCurseCount(username, c.getCurseCount()));
 
 				count++;
 			}
-
-			message.reply(sb.toString());
 			
+			outputUsersBeautified(topUsers, message);
 		}
-
 	}
+	
+	@Getter
+	private final class UsernameAndCurseCount{
+		private final String username;
+		private final Long curseCount;
+		
+		public UsernameAndCurseCount(final String username, final Long curseCount){
+			this.username = username;
+			this.curseCount = curseCount;
+		}
+	}
+	
+	private void outputUsersBeautified(final List<UsernameAndCurseCount> topUsers, final Message message){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Current Curse Jar Balances: \n\n```");
+		
+		final int maxNameLength = topUsers.stream()
+			.map(e -> e.getUsername().length())
+			.max(Integer::compareTo).get();
 
+		topUsers.forEach(e->{
+			sb	.append(padLeft(e.getUsername(), maxNameLength))
+				.append(padLeft(NumberFormat.getCurrencyInstance().format(e.getCurseCount() * .1f), 15))
+				.append("\n");
+		});
+		
+		sb.append("```");
+		message.reply(sb.toString());
+	}
+	
+	private String padLeft(@NonNull final String input, final int paddingDigits){
+		if(paddingDigits >= 55){
+			return input;
+		}
+		
+		final String padChars = "                                                      ".substring(0, paddingDigits);
+		
+		if(input.length() >= padChars.length()){
+			return input;
+		}
+		
+		return padChars.substring(input.length()) + input;
+	}
 }
