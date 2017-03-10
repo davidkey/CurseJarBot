@@ -35,8 +35,10 @@ import org.springframework.stereotype.Service;
 
 import com.dak.cursejarbot.model.CurseWord;
 import com.dak.cursejarbot.model.Curses;
+import com.dak.cursejarbot.model.Server;
 import com.dak.cursejarbot.repository.CurseWordRepository;
 import com.dak.cursejarbot.repository.CursesRepository;
+import com.dak.cursejarbot.repository.ServerRepository;
 
 import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.User;
@@ -50,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CurseService {
 	private final CursesRepository cursesRepos;
 	private final CurseWordRepository curseWordRepos;
+	private final ServerRepository serverRepos;
 	private final DiscordAPI api;
 
 	private Map<String, Pattern> cursePatterns;
@@ -57,10 +60,14 @@ public class CurseService {
 	private List<String> cursesFromFile;
 
 	@Autowired
-	public CurseService(final CursesRepository cursesRepos, final CurseWordRepository curseWordRepos, final DiscordAPI api){
+	public CurseService(final CursesRepository cursesRepos, 
+			final CurseWordRepository curseWordRepos, 
+			final DiscordAPI api,
+			final ServerRepository serverRepos){
 		this.cursesRepos = cursesRepos;
 		this.curseWordRepos = curseWordRepos;
 		this.api = api;
+		this.serverRepos = serverRepos;
 		cursePatterns = null;
 		cursesFromFile = null;
 		silentMode = new HashMap<String, Boolean>();
@@ -98,15 +105,48 @@ public class CurseService {
 	}
 
 	public void enableSilentMode(final String serverId){
+		Server server = serverRepos.findOne(serverId);
+		
+		if(server == null){
+			server = Server.builder().serverId(serverId).silentMode(true).build();
+		} else {
+			server.setSilentMode(true);
+		}
+		
+		serverRepos.save(server);
+		
 		silentMode.put(serverId, true);
 	}
 
 	public void disableSilentMode(final String serverId){
+		Server server = serverRepos.findOne(serverId);
+		
+		if(server == null){
+			server = Server.builder().serverId(serverId).silentMode(false).build();
+		} else {
+			server.setSilentMode(false);
+		}
+		
+		serverRepos.save(server);
+		
 		silentMode.put(serverId, false);
 	}
 
 	public Boolean isSilentModeEnabled(final String serverId){
-		return silentMode.containsKey(serverId) && silentMode.get(serverId);
+		if(silentMode.containsKey(serverId)){
+			return silentMode.get(serverId);
+		}
+		
+		Server server = serverRepos.findOne(serverId);
+		
+		if(server == null){
+			// if we don't already have a a record for this server, 
+			// add one and use default silent setting
+			server = Server.builder().serverId(serverId).silentMode(false).build();
+			serverRepos.save(server);
+		}
+		
+		return server.getSilentMode();
 	}
 
 	public Boolean clearBalances(@NonNull final String serverId){
