@@ -12,7 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
 OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT 
 OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+ */
 
 package com.dak.cursejarbot.service;
 
@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,7 +42,6 @@ import com.dak.cursejarbot.repository.CurseWordRepository;
 import com.dak.cursejarbot.repository.CursesRepository;
 import com.dak.cursejarbot.repository.ServerRepository;
 
-import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
 import lombok.NonNull;
@@ -53,24 +54,23 @@ public class CurseService {
 	private final CursesRepository cursesRepos;
 	private final CurseWordRepository curseWordRepos;
 	private final ServerRepository serverRepos;
-	private final DiscordAPI api;
+	private final ScheduledThreadPoolExecutor exec;
 
 	private Map<String, Pattern> cursePatterns;
-	private final Map<String, Boolean> silentMode; // TODO: refactor to a table so we can persist this through server restarts...
+	private final Map<String, Boolean> silentMode;
 	private List<String> cursesFromFile;
 
 	@Autowired
 	public CurseService(final CursesRepository cursesRepos, 
 			final CurseWordRepository curseWordRepos, 
-			final DiscordAPI api,
 			final ServerRepository serverRepos){
 		this.cursesRepos = cursesRepos;
 		this.curseWordRepos = curseWordRepos;
-		this.api = api;
 		this.serverRepos = serverRepos;
 		cursePatterns = null;
 		cursesFromFile = null;
 		silentMode = new HashMap<String, Boolean>();
+		exec = new ScheduledThreadPoolExecutor(1);
 	}
 
 	public Curses incrementCurseCount(final User user, final String serverId, final int count){
@@ -91,44 +91,34 @@ public class CurseService {
 	}
 
 	public void deleteMessageBySchedule(final Message message, final Long secondsBeforeDelete){
-		final String messageId = message.getId();
-		
-		new java.util.Timer().schedule( 
-		        new java.util.TimerTask() {
-		            @Override
-		            public void run() {
-		                api.getMessageById(messageId).delete();
-		            }
-		        }, 
-		        secondsBeforeDelete * 1000L
-		);
+		exec.schedule(message::delete, secondsBeforeDelete, TimeUnit.SECONDS);
 	}
 
 	public void enableSilentMode(final String serverId){
 		Server server = serverRepos.findOne(serverId);
-		
+
 		if(server == null){
 			server = Server.builder().serverId(serverId).silentMode(true).build();
 		} else {
 			server.setSilentMode(true);
 		}
-		
+
 		serverRepos.save(server);
-		
+
 		silentMode.put(serverId, true);
 	}
 
 	public void disableSilentMode(final String serverId){
 		Server server = serverRepos.findOne(serverId);
-		
+
 		if(server == null){
 			server = Server.builder().serverId(serverId).silentMode(false).build();
 		} else {
 			server.setSilentMode(false);
 		}
-		
+
 		serverRepos.save(server);
-		
+
 		silentMode.put(serverId, false);
 	}
 
@@ -136,16 +126,16 @@ public class CurseService {
 		if(silentMode.containsKey(serverId)){
 			return silentMode.get(serverId);
 		}
-		
+
 		Server server = serverRepos.findOne(serverId);
-		
+
 		if(server == null){
 			// if we don't already have a a record for this server, 
 			// add one and use default silent setting
 			server = Server.builder().serverId(serverId).silentMode(false).build();
 			serverRepos.save(server);
 		}
-		
+
 		return server.getSilentMode();
 	}
 
