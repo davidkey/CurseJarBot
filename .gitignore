@@ -44,4 +44,5 @@ gradle-app.setting
 /bin/
 
 /data/
-application.properties
+#application.properties
+/src/main/resources/application.properties
